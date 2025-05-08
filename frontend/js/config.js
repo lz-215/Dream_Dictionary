@@ -6,7 +6,7 @@ const config = {
     },
     // Production environment (Vercel)
     production: {
-        apiBaseUrl: '/api' // 相对路径，指向同一域名下的API
+        apiBaseUrl: '/api' // Relative path for same-domain API on Vercel
     }
 };
 
