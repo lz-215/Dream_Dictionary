@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Functions
     async function checkModelStatus() {
         try {
-            const response = await fetch('/api/model-status');
+            const response = await fetch(`${currentConfig.apiBaseUrl}/model-status`);
             if (response.ok) {
                 const data = await response.json();
                 modelAvailable = data.model_available;
@@ -112,6 +112,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error('Error checking model status:', error);
+            // Handle offline mode or API unavailability
+            const aboutModelSection = document.getElementById('modelInfo');
+            if (aboutModelSection) {
+                aboutModelSection.innerHTML = `
+                    <h4>Dream Engine Status</h4>
+                    <p>Currently using: <strong>Offline Mode</strong></p>
+                    <p>The dream analysis engine is currently running in offline mode with basic functionality.</p>
+                `;
+            }
+            modelAvailable = false;
+            modelType = "Offline Mode";
         }
     }
 
@@ -128,24 +139,36 @@ document.addEventListener('DOMContentLoaded', function() {
         resultsSection.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Analyzing your dream...</div>';
 
         try {
-            const response = await fetch('/api/interpret', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    dream_text: dreamText,
-                    user_id: userId,
-                    use_ml: modelAvailable,
-                    model_preference: 'auto'
-                }),
-            });
+            let data;
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            // Try to use the backend API
+            try {
+                const response = await fetch(`${currentConfig.apiBaseUrl}/interpret`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        dream_text: dreamText,
+                        user_id: userId,
+                        use_ml: modelAvailable,
+                        model_preference: 'auto'
+                    }),
+                    // Set a timeout to fail fast if the API is not available
+                    signal: AbortSignal.timeout(5000)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                data = await response.json();
+            } catch (apiError) {
+                console.warn('API error, falling back to offline mode:', apiError);
+                // Fall back to offline mode
+                data = offlineAPI.interpretDream(dreamText, userId);
             }
 
-            const data = await response.json();
             displayResults(data);
 
         } catch (error) {
@@ -331,7 +354,7 @@ document.addEventListener('DOMContentLoaded', function() {
         dreamHistory.innerHTML = '<p class="loading"><i class="fas fa-spinner fa-spin"></i> Loading your dream history...</p>';
 
         try {
-            const response = await fetch(`/api/history?user_id=${userId}&limit=10`);
+            const response = await fetch(`${currentConfig.apiBaseUrl}/history?user_id=${userId}&limit=10`);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -395,7 +418,7 @@ document.addEventListener('DOMContentLoaded', function() {
         dreamStats.innerHTML = '<p class="loading"><i class="fas fa-spinner fa-spin"></i> Loading dream statistics...</p>';
 
         try {
-            const response = await fetch('/api/stats');
+            const response = await fetch(`${currentConfig.apiBaseUrl}/stats`);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
