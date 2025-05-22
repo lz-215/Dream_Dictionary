@@ -1,5 +1,7 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, session
 from flask_cors import CORS
+from flask_bcrypt import Bcrypt
+from flask_session import Session
 import json
 import os
 import logging
@@ -11,6 +13,15 @@ logger = logging.getLogger(__name__)
 # Create Flask app
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
+bcrypt = Bcrypt(app)
+
+# Configure session
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SECRET_KEY'] = 'your_secret_key'
+Session(app)
+
+# In-memory user database (for demonstration purposes)
+USERS = {}
 
 # Simple in-memory dream interpretations
 INTERPRETATIONS = {
@@ -27,6 +38,48 @@ INTERPRETATIONS = {
 
 # In-memory dream history
 DREAMS_HISTORY = []
+
+@app.route('/api/register', methods=['POST'])
+def register():
+    """Register a new user"""
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+
+    if not username or not password:
+        return jsonify({"error": "Username and password are required"}), 400
+
+    if username in USERS:
+        return jsonify({"error": "Username already exists"}), 400
+
+    # Hash the password and store the user
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+    USERS[username] = hashed_password
+    return jsonify({"message": "User registered successfully"}), 201
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    """Log in a user"""
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+
+    if not username or not password:
+        return jsonify({"error": "Username and password are required"}), 400
+
+    hashed_password = USERS.get(username)
+    if not hashed_password or not bcrypt.check_password_hash(hashed_password, password):
+        return jsonify({"error": "Invalid username or password"}), 401
+
+    # Store user in session
+    session['user'] = username
+    return jsonify({"message": "Login successful", "username": username}), 200
+
+@app.route('/api/logout', methods=['POST'])
+def logout():
+    """Log out the current user"""
+    session.pop('user', None)
+    return jsonify({"message": "Logout successful"}), 200
 
 @app.route('/')
 def home():

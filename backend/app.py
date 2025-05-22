@@ -3,10 +3,13 @@ from flask_cors import CORS
 import json
 import re
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import logging
 import model_service
+import hashlib
+import secrets
+import jwt
 
 # Configure logging
 logging.basicConfig(
@@ -23,6 +26,10 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
+# Set secret key for JWT tokens
+SECRET_KEY = secrets.token_hex(32)
+TOKEN_EXPIRE_HOURS = 24  # Token expiration time in hours
+
 # Initialize dreams history storage
 DREAMS_HISTORY_FILE = 'dreams_history.json'
 if not os.path.exists(DREAMS_HISTORY_FILE):
@@ -30,8 +37,177 @@ if not os.path.exists(DREAMS_HISTORY_FILE):
         json.dump([], f)
     logger.info(f"Created new dreams history file: {DREAMS_HISTORY_FILE}")
 
+# Initialize user database
+USERS_DB_FILE = 'users.json'
+if not os.path.exists(USERS_DB_FILE):
+    with open(USERS_DB_FILE, 'w', encoding='utf-8') as f:
+        json.dump([], f)
+    logger.info(f"Created new users database file: {USERS_DB_FILE}")
+
 # Initialize models asynchronously for faster startup
 model_service.initialize_models(async_loading=True)
+
+# User authentication functions
+def hash_password(password, salt=None):
+    """Hash a password with a salt using SHA-256"""
+    if not salt:
+        salt = secrets.token_hex(16)
+    password_hash = hashlib.sha256((password + salt).encode()).hexdigest()
+    return password_hash, salt
+
+def verify_password(password, stored_hash, salt):
+    """Verify a password against a stored hash"""
+    password_hash, _ = hash_password(password, salt)
+    return password_hash == stored_hash
+
+def generate_token(user_id, username):
+    """Generate a JWT token for authenticated users"""
+    expiration = datetime.utcnow() + timedelta(hours=TOKEN_EXPIRE_HOURS)
+    payload = {
+        'user_id': user_id,
+        'username': username,
+        'exp': expiration
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+
+def verify_token(token):
+    """Verify a JWT token and return the user information"""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        return payload
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
+
+@app.route('/api/register', methods=['POST'])
+def register_user():
+    """Register a new user"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Invalid JSON data"}), 400
+
+        username = data.get('username', '').strip()
+        password = data.get('password', '').strip()
+
+        # Validate input
+        if not username or not password:
+            return jsonify({"error": "Username and password are required"}), 400
+        
+        if len(username) < 3:
+            return jsonify({"error": "Username must be at least 3 characters"}), 400
+            
+        if len(password) < 6:
+            return jsonify({"error": "Password must be at least 6 characters"}), 400
+
+        # Load existing users
+        with open(USERS_DB_FILE, 'r', encoding='utf-8') as f:
+            users = json.load(f)
+
+        # Check if username already exists
+        if any(user['username'] == username for user in users):
+            return jsonify({"error": "Username already exists"}), 409
+
+        # Hash password
+        password_hash, salt = hash_password(password)
+
+        # Create new user
+        new_user = {
+            "id": str(len(users) + 1),
+            "username": username,
+            "password_hash": password_hash,
+            "salt": salt,
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+
+        # Add to users list
+        users.append(new_user)
+
+        # Save users back to file
+        with open(USERS_DB_FILE, 'w', encoding='utf-8') as f:
+            json.dump(users, f, ensure_ascii=False, indent=2)
+
+        # Generate token
+        token = generate_token(new_user["id"], username)
+
+        return jsonify({
+            "message": "User registered successfully",
+            "user_id": new_user["id"],
+            "username": username,
+            "token": token
+        })
+
+    except Exception as e:
+        logger.error(f"Error in register_user: {str(e)}", exc_info=True)
+        return jsonify({"error": "An error occurred during registration"}), 500
+
+@app.route('/api/login', methods=['POST'])
+def login_user():
+    """Login an existing user"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Invalid JSON data"}), 400
+
+        username = data.get('username', '').strip()
+        password = data.get('password', '').strip()
+
+        # Validate input
+        if not username or not password:
+            return jsonify({"error": "Username and password are required"}), 400
+
+        # Load existing users
+        with open(USERS_DB_FILE, 'r', encoding='utf-8') as f:
+            users = json.load(f)
+
+        # Find user by username
+        user = next((user for user in users if user['username'] == username), None)
+        if not user:
+            return jsonify({"error": "Invalid username or password"}), 401
+
+        # Verify password
+        if not verify_password(password, user['password_hash'], user['salt']):
+            return jsonify({"error": "Invalid username or password"}), 401
+
+        # Generate token
+        token = generate_token(user["id"], username)
+
+        return jsonify({
+            "message": "Login successful",
+            "user_id": user["id"],
+            "username": username,
+            "token": token
+        })
+
+    except Exception as e:
+        logger.error(f"Error in login_user: {str(e)}", exc_info=True)
+        return jsonify({"error": "An error occurred during login"}), 500
+
+@app.route('/api/user', methods=['GET'])
+def get_user_info():
+    """Get user information from token"""
+    try:
+        # Get token from Authorization header
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return jsonify({"error": "Authorization header missing or invalid"}), 401
+        
+        token = auth_header.split(' ')[1]
+        
+        # Verify token
+        payload = verify_token(token)
+        if not payload:
+            return jsonify({"error": "Invalid or expired token"}), 401
+        
+        return jsonify({
+            "user_id": payload["user_id"],
+            "username": payload["username"]
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in get_user_info: {str(e)}", exc_info=True)
+        return jsonify({"error": "An error occurred while retrieving user information"}), 500
 
 @app.route('/api/interpret', methods=['POST'])
 def interpret_dream():
@@ -136,20 +312,34 @@ def serve_frontend(path):
 
 @app.route('/api/history', methods=['GET'])
 def get_dream_history():
-    """Get dream interpretation history with pagination"""
+    """Get dream interpretation history with pagination and user authentication"""
     try:
+        # Get auth token from header
+        auth_header = request.headers.get('Authorization')
+        user_id = None
+        
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
+            payload = verify_token(token)
+            if payload:
+                user_id = payload['user_id']
+        
+        # Return empty response if not authenticated
+        if not user_id:
+            return jsonify({
+                "error": "Authentication required to view dream history"
+            }), 401
+            
         # Get pagination parameters
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('per_page', 20))
-        user_id = request.args.get('user_id', None)
 
         # Read history
         with open(DREAMS_HISTORY_FILE, 'r', encoding='utf-8') as f:
             history = json.load(f)
 
-        # Filter by user_id if specified
-        if user_id:
-            history = [entry for entry in history if entry.get('user_id') == user_id]
+        # Filter by user_id 
+        history = [entry for entry in history if entry.get('user_id') == user_id]
 
         # Calculate pagination
         total_items = len(history)
@@ -172,17 +362,36 @@ def get_dream_history():
 
 @app.route('/api/stats', methods=['GET'])
 def get_dream_stats():
-    """Get statistics about dream interpretations"""
+    """Get statistics about dream interpretations with user authentication for personal stats"""
     try:
+        # Get auth token from header
+        auth_header = request.headers.get('Authorization')
+        user_id = None
+        
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
+            payload = verify_token(token)
+            if payload:
+                user_id = payload['user_id']
+        
         # Read history
         with open(DREAMS_HISTORY_FILE, 'r', encoding='utf-8') as f:
             history = json.load(f)
+
+        # Filter by user_id if authenticated, otherwise show global stats
+        personal_stats = False
+        if user_id:
+            personal_history = [entry for entry in history if entry.get('user_id') == user_id]
+            if len(personal_history) > 0:
+                personal_stats = True
+                history = personal_history
 
         if not history:
             return jsonify({
                 "total_dreams": 0,
                 "common_keywords": [],
-                "last_week_count": 0
+                "last_week_count": 0,
+                "personal_stats": personal_stats
             })
 
         # Calculate stats
@@ -196,25 +405,29 @@ def get_dream_stats():
                 keyword = interp.get('keyword', '')
                 if keyword and keyword != 'General':
                     keyword_counter[keyword] += 1
-
+        
         # Get common keywords
-        common_keywords = [{"keyword": k, "count": c} for k, c in keyword_counter.most_common(10)]
-
-        # Calculate dreams in the last week
-        today = datetime.now()
-        last_week = [entry for entry in history if
-                    (today - datetime.strptime(entry['date'], "%Y-%m-%d %H:%M:%S")).days <= 7]
-        last_week_count = len(last_week)
-
+        common_keywords = [{"keyword": k, "count": c} 
+                          for k, c in keyword_counter.most_common(10)]
+        
+        # Count dreams from last week
+        from datetime import datetime, timedelta
+        one_week_ago = datetime.now() - timedelta(days=7)
+        one_week_ago_str = one_week_ago.strftime("%Y-%m-%d")
+        
+        last_week_count = sum(1 for entry in history 
+                             if entry.get('date', '').split()[0] >= one_week_ago_str)
+        
         return jsonify({
             "total_dreams": total_dreams,
             "common_keywords": common_keywords,
             "last_week_count": last_week_count,
-            "model_stats": model_service.get_model_status()
+            "personal_stats": personal_stats
         })
+        
     except Exception as e:
-        logger.error(f"Error generating dream stats: {e}")
-        return jsonify({"error": "Failed to generate statistics"}), 500
+        logger.error(f"Error retrieving dream stats: {e}")
+        return jsonify({"error": "Failed to retrieve dream statistics"}), 500
 
 @app.route('/api/model-status', methods=['GET'])
 def get_model_status():
@@ -244,6 +457,61 @@ def reload_models():
     except Exception as e:
         logger.error(f"Error reloading models: {e}")
         return jsonify({"error": "Failed to reload models"}), 500
+
+@app.route('/api/google-login', methods=['POST'])
+def google_login():
+    """Process Google login data and create/update a user account"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Invalid JSON data"}), 400
+
+        google_id = data.get('google_id')
+        name = data.get('name', '')
+        email = data.get('email', '')
+        
+        if not google_id:
+            return jsonify({"error": "Google ID is required"}), 400
+
+        # Load existing users
+        with open(USERS_DB_FILE, 'r', encoding='utf-8') as f:
+            users = json.load(f)
+
+        # Check if user with this Google ID already exists
+        user = next((user for user in users if user.get('google_id') == google_id), None)
+        
+        if not user:
+            # Create new user with Google info
+            new_user = {
+                "id": str(len(users) + 1),
+                "username": name or email or f"user_{len(users) + 1}",
+                "google_id": google_id,
+                "email": email,
+                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+            
+            # Add to users list
+            users.append(new_user)
+            
+            # Save users back to file
+            with open(USERS_DB_FILE, 'w', encoding='utf-8') as f:
+                json.dump(users, f, ensure_ascii=False, indent=2)
+                
+            user = new_user
+        
+        # Generate token
+        token = generate_token(user["id"], user.get("username", ""))
+
+        return jsonify({
+            "message": "Google login successful",
+            "user_id": user["id"],
+            "username": user.get("username", ""),
+            "token": token
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in google_login: {str(e)}", exc_info=True)
+        return jsonify({"error": "An error occurred during Google login"}), 500
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5000)

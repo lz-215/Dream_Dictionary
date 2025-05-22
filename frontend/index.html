@@ -23,8 +23,29 @@
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-moon"></i> Dream Interpreter</h1>
-            <p>Explore the meaning behind your dreams</p>
+            <div class="header-top">
+                <div class="header-left">
+                    <h1><i class="fas fa-moon"></i> Dream Interpreter</h1>
+                    <p>Explore the meaning behind your dreams</p>
+                </div>
+                <div class="header-right">
+                    <button id="headerLoginBtn" class="header-login-btn">
+                        <i class="fas fa-user"></i> Login
+                    </button>
+                    <div id="userProfileDropdown" class="user-profile-dropdown">
+                        <div class="dropdown-profile">
+                            <img id="userAvatar" src="" alt="User Avatar" class="profile-pic">
+                            <span id="userDropdownName"></span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" id="profileLink"><i class="fas fa-user-circle"></i> My Profile</a></li>
+                            <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
             <nav>
                 <ul>
                     <li><a href="#" id="navHome" class="active">Home</a></li>
@@ -103,6 +124,25 @@
                     </div>
 
                     <p>Remember that the most meaningful interpretation of a dream is often the one that resonates with your own experiences and intuition.</p>
+                </div>
+            </section>
+
+            <section id="loginSection" class="page-section">
+                <h2><i class="fas fa-user"></i> Login</h2>
+                <div class="login-container">
+                    <input type="text" id="username" placeholder="Username" required>
+                    <input type="password" id="password" placeholder="Password" required>
+                    <div class="button-group">
+                        <button id="loginButton" class="primary-button"><i class="fas fa-sign-in-alt"></i> Login</button>
+                        <button id="registerButton" class="secondary-button"><i class="fas fa-user-plus"></i> Register</button>
+                    </div>
+                    <div class="social-login">
+                        <p class="or-divider">OR</p>
+                        <button id="googleLoginButton" class="google-button">
+                            <i class="fab fa-google"></i> Sign in with Google
+                        </button>
+                    </div>
+                    <p id="loginMessage" class="message"></p>
                 </div>
             </section>
 
@@ -202,5 +242,102 @@
     <script src="js/config.js"></script>
     <script src="js/offline-mode.js"></script>
     <script src="js/script.js"></script>
+    <script>
+        // 页面加载完成后手动添加事件监听
+        document.addEventListener('DOMContentLoaded', function() {
+            // 手动添加登录按钮事件处理程序
+            const loginBtn = document.getElementById('loginButton');
+            if (loginBtn) {
+                console.log('Login button found by inline script');
+                loginBtn.onclick = function(e) {
+                    e.preventDefault();
+                    console.log('Login button clicked! (inline handler)');
+                    
+                    const username = document.getElementById('username').value;
+                    const password = document.getElementById('password').value;
+                    
+                    // 验证输入
+                    if (!username || !password) {
+                        document.getElementById('loginMessage').textContent = 'Username and password are required';
+                        document.getElementById('loginMessage').className = 'message error';
+                        return;
+                    }
+                    
+                    // 显示加载状态
+                    document.getElementById('loginMessage').textContent = 'Logging in...';
+                    document.getElementById('loginMessage').className = 'message';
+                    
+                    // 发送登录请求
+                    fetch('/api/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.token) {
+                            // 存储用户信息和令牌
+                            localStorage.setItem('user', JSON.stringify({
+                                userId: data.user_id,
+                                username: data.username,
+                                token: data.token
+                            }));
+                            
+                            // 显示成功消息
+                            document.getElementById('loginMessage').textContent = `Welcome, ${data.username}!`;
+                            document.getElementById('loginMessage').style.color = 'green';
+                            
+                            // 跳转到主页
+                            setTimeout(() => {
+                                document.getElementById('navHome').click();
+                                location.reload(); // 重新加载页面以更新UI
+                            }, 1000);
+                        } else {
+                            document.getElementById('loginMessage').textContent = data.error || 'Login failed';
+                            document.getElementById('loginMessage').className = 'message error';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Login error:', error);
+                        document.getElementById('loginMessage').textContent = 'Login failed: ' + error.message;
+                        document.getElementById('loginMessage').className = 'message error';
+                    });
+                };
+            } else {
+                console.error('Login button not found by inline script!');
+            }
+            
+            // 谷歌登录按钮处理
+            const googleLoginBtn = document.getElementById('googleLoginButton');
+            if (googleLoginBtn) {
+                console.log('Google login button found by inline script');
+                googleLoginBtn.onclick = function(e) {
+                    e.preventDefault();
+                    console.log('Google login button clicked! (inline handler)');
+                    
+                    // 提取域名
+                    let hostname = window.location.hostname;
+                    let mainDomain = 'qhdsalsm.com';
+                    try {
+                        hostname = hostname.replace(/^(https?:\/\/)?(www\.)?/i, '').split('/')[0];
+                        const parts = hostname.split('.');
+                        if (parts.length >= 2) {
+                            mainDomain = parts.slice(-2).join('.');
+                        } else if (hostname) {
+                            mainDomain = hostname;
+                        }
+                    } catch (error) {
+                        console.error('Error extracting domain:', error);
+                    }
+                    
+                    const callback = encodeURIComponent(window.location.href);
+                    console.log('Redirecting to Google login with domain:', mainDomain);
+                    window.location.href = `https://aa.jstang.cn/google_login.php?url=${mainDomain}&redirect_uri=${callback}`;
+                };
+            } else {
+                console.error('Google login button not found by inline script!');
+            }
+        });
+    </script>
 </body>
 </html>
