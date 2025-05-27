@@ -19,6 +19,7 @@
     <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -28,21 +29,21 @@
                     <h1><i class="fas fa-moon"></i> Dream Interpreter</h1>
                     <p>Explore the meaning behind your dreams</p>
                 </div>
-                <div class="header-right">
-                    <button id="headerLoginBtn" class="header-login-btn">
-                        <i class="fas fa-user"></i> Login
-                    </button>
-                    <div id="userProfileDropdown" class="user-profile-dropdown">
-                        <div class="dropdown-profile">
-                            <img id="userAvatar" src="" alt="User Avatar" class="profile-pic">
-                            <span id="userDropdownName"></span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <ul class="dropdown-menu">
-                            <li><a href="#" id="profileLink"><i class="fas fa-user-circle"></i> My Profile</a></li>
-                            <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-                        </ul>
+            </div>
+            <div class="header-login-area">
+                <button id="headerLoginBtn" class="header-login-btn">
+                    <i class="fas fa-user"></i> Login
+                </button>
+                <div id="userProfileDropdown" class="user-profile-dropdown">
+                    <div class="dropdown-profile">
+                        <img id="userAvatar" src="" alt="User Avatar" class="profile-pic">
+                        <span id="userDropdownName"></span>
+                        <i class="fas fa-chevron-down"></i>
                     </div>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" id="profileLink"><i class="fas fa-user-circle"></i> My Profile</a></li>
+                        <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
                 </div>
             </div>
             
@@ -50,8 +51,7 @@
                 <ul>
                     <li><a href="#" id="navHome" class="active">Home</a></li>
                     <li><a href="#" id="navHistory">Dream History</a></li>
-                    <li><a href="#" id="navStats">Dream Stats</a></li>
-                    <li><a href="#" id="navAbout">About</a></li>
+                    <li style="display:none;"><a href="#" id="navStats">Dream Stats</a></li>
                 </ul>
             </nav>
         </header>
@@ -90,54 +90,10 @@
                 </div>
             </section>
 
-            <!-- About Section -->
-            <section id="aboutSection" class="page-section">
-                <h2><i class="fas fa-info-circle"></i> About Dream Interpretation</h2>
-                <div class="about-content">
-                    <p>Dream interpretation is the process of assigning meaning to dreams. Throughout history, people have sought to understand the mysterious content of dreams and their possible significance for our waking lives.</p>
-
-                    <h3>Psychological Perspectives</h3>
-                    <p>Different psychological traditions offer various frameworks for understanding dreams:</p>
-                    <ul>
-                        <li><strong>Freudian:</strong> Dreams represent unconscious desires and wish fulfillment</li>
-                        <li><strong>Jungian:</strong> Dreams connect us to the collective unconscious and universal archetypes</li>
-                        <li><strong>Cognitive:</strong> Dreams help process emotions and consolidate memories</li>
-                        <li><strong>Neurological:</strong> Dreams are the result of random neural activity that the brain attempts to interpret</li>
-                    </ul>
-
-                    <h3>Cultural Traditions</h3>
-                    <p>Many cultures have rich traditions of dream interpretation:</p>
-                    <ul>
-                        <li><strong>Chinese:</strong> Dreams may be messages from ancestors or predictions of future events</li>
-                        <li><strong>Native American:</strong> Dreams are considered a way to communicate with spirits and receive guidance</li>
-                        <li><strong>Ancient Egyptian:</strong> Dreams were considered messages from the gods</li>
-                        <li><strong>Greek and Roman:</strong> Dreams were seen as direct messages from deities or the dead</li>
-                    </ul>
-
-                    <h3>Our Approach</h3>
-                    <p>Our dream interpreter combines insights from psychology, cultural traditions, and modern research to provide a balanced perspective on your dreams. We analyze the symbols and themes in your dream description to offer possible interpretations and reflection questions.</p>
-
-                    <div id="modelInfo" class="model-info-section">
-                        <!-- Model info will be dynamically inserted here -->
-                        <h4>Dream Engine Status</h4>
-                        <p>Loading model information...</p>
-                    </div>
-
-                    <p>Remember that the most meaningful interpretation of a dream is often the one that resonates with your own experiences and intuition.</p>
-                </div>
-            </section>
-
             <section id="loginSection" class="page-section">
                 <h2><i class="fas fa-user"></i> Login</h2>
                 <div class="login-container">
-                    <input type="text" id="username" placeholder="Username" required>
-                    <input type="password" id="password" placeholder="Password" required>
-                    <div class="button-group">
-                        <button id="loginButton" class="primary-button"><i class="fas fa-sign-in-alt"></i> Login</button>
-                        <button id="registerButton" class="secondary-button"><i class="fas fa-user-plus"></i> Register</button>
-                    </div>
                     <div class="social-login">
-                        <p class="or-divider">OR</p>
                         <button id="googleLoginButton" class="google-button">
                             <i class="fab fa-google"></i> Sign in with Google
                         </button>
@@ -154,11 +110,8 @@
         <footer>
             <div class="footer-content">
                 <div class="footer-row">
-                    <p>Dream Interpreter &copy; 2025 All Rights Reserved</p>
-                    <p><a href="#" id="privacyLink">Privacy Policy</a></p>
-                    <p>Email: ytsgabcde16@2925.com</p>
-                    <p>Powered by AI Dream Analysis Technology</p>
-                    <p><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">渝ICP备2024032264号-70</a></p>
+                    <p>Dream Interpreter © 2025 All Rights Reserved | <a href="#" id="privacyLink">Privacy Policy</a> | <a href="#" id="termsLink">Terms of Service</a> | <a href="#" id="userAgreementLink">User Agreement</a></p>
+                    <p>Email: ytsgabcde16@2925.com  <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">渝ICP备2024032264号-70</a></p>
                 </div>
             </div>
         </footer>
@@ -171,173 +124,82 @@
             <h2>Privacy Policy</h2>
             <div class="policy-content">
                 <p><strong>Last Updated:</strong> June 1, 2025</p>
-
                 <h3>1. Introduction</h3>
-                <p>Welcome to Dream Interpreter. We respect your privacy and are committed to protecting your personal data. This privacy policy explains how we collect, use, and safeguard your information when you use our dream interpretation service.</p>
-
+                <p>We value your privacy and are committed to protecting your personal information. This Privacy Policy explains how we collect, use, and safeguard your data when you use our Dream Interpreter service.</p>
                 <h3>2. Information We Collect</h3>
-                <p>We collect the following types of information:</p>
                 <ul>
-                    <li><strong>Dream Content:</strong> The dreams you submit for interpretation.</li>
-                    <li><strong>User ID:</strong> A randomly generated identifier stored on your device to track your dream history.</li>
-                    <li><strong>Usage Data:</strong> Information about how you interact with our service, including access times and pages viewed.</li>
-                    <li><strong>Device Information:</strong> Basic information about your device and browser.</li>
-                    <li><strong>Analytics Data:</strong> We use Google Analytics to collect anonymous data about site usage, including page views, session duration, and user demographics.</li>
+                    <li>Dream content you submit for interpretation</li>
+                    <li>Basic device and browser information</li>
+                    <li>Usage data and analytics</li>
                 </ul>
-
                 <h3>3. How We Use Your Information</h3>
-                <p>We use your information for the following purposes:</p>
                 <ul>
-                    <li>To provide dream interpretations</li>
-                    <li>To maintain your dream history</li>
-                    <li>To generate anonymous statistics about dream themes</li>
-                    <li>To improve our interpretation algorithms</li>
-                    <li>To ensure the security and functionality of our service</li>
-                    <li>To analyze website traffic and user behavior through Google Analytics</li>
-                    <li>To optimize our website design and user experience based on analytics data</li>
+                    <li>To provide dream interpretation services</li>
+                    <li>To improve our algorithms and user experience</li>
+                    <li>To analyze usage trends and statistics</li>
                 </ul>
-
-                <h3>4. Data Storage and Security</h3>
-                <p>Your dream content is stored locally on our servers with appropriate security measures. We implement reasonable security practices to protect your information from unauthorized access or disclosure.</p>
-
-                <h3>5. Sharing Your Information</h3>
-                <p>We do not sell, trade, or otherwise transfer your personally identifiable information to third parties. Anonymous, aggregated data about dream themes and symbols may be used for research or shared with partners.</p>
-
+                <h3>4. Data Security</h3>
+                <p>We implement reasonable security measures to protect your data from unauthorized access or disclosure.</p>
+                <h3>5. Third-Party Services</h3>
+                <p>We may use third-party analytics and authentication services. These providers have their own privacy policies.</p>
                 <h3>6. Your Rights</h3>
-                <p>You have the right to:</p>
                 <ul>
-                    <li>Access your dream history</li>
-                    <li>Delete your dream history</li>
-                    <li>Opt out of data collection (note that this will limit functionality)</li>
+                    <li>Access, update, or delete your data</li>
+                    <li>Contact us for any privacy concerns</li>
                 </ul>
-
-                <h3>7. Cookies and Local Storage</h3>
-                <p>We use local storage to save your user ID and preferences. This helps us provide a personalized experience and maintain your dream history between sessions.</p>
-
-                <h4>Google Analytics</h4>
-                <p>We use Google Analytics to understand how visitors interact with our website. Google Analytics uses cookies to collect information about your visit, including:</p>
+                <h3>7. Changes to This Policy</h3>
+                <p>We may update this Privacy Policy from time to time. Changes will be posted on this page.</p>
+            </div>
+        </div>
+    </div>
+    <!-- Terms of Service Modal -->
+    <div id="termsModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Terms of Service</h2>
+            <div class="policy-content">
+                <p><strong>Last Updated:</strong> June 1, 2025</p>
+                <h3>1. Acceptance of Terms</h3>
+                <p>By using the Dream Interpreter service, you agree to these Terms of Service. If you do not agree, please do not use the service.</p>
+                <h3>2. Service Description</h3>
+                <p>Dream Interpreter provides AI-powered dream analysis for informational and entertainment purposes only. It is not a substitute for professional psychological advice.</p>
+                <h3>3. User Responsibilities</h3>
                 <ul>
-                    <li>Pages you visit and how long you stay on each page</li>
-                    <li>The website you came from (if applicable)</li>
-                    <li>What type of browser, device, and operating system you're using</li>
-                    <li>Your IP address (anonymized)</li>
-                    <li>General geographic location (city/country level)</li>
+                    <li>Provide accurate and lawful information</li>
+                    <li>Do not misuse the service or attempt unauthorized access</li>
                 </ul>
-                <p>This information helps us improve our service and user experience. Google Analytics data is processed in a way that does not personally identify you. You can learn more about Google's data practices by visiting <a href="https://policies.google.com/privacy" target="_blank">Google's Privacy Policy</a>.</p>
-
-                <p>If you prefer to opt out of Google Analytics tracking, you can install the <a href="https://tools.google.com/dlpage/gaoptout" target="_blank">Google Analytics Opt-out Browser Add-on</a>.</p>
-
-                <h3>8. Children's Privacy</h3>
-                <p>Our service is not intended for children under 13 years of age, and we do not knowingly collect personal information from children under 13.</p>
-
-                <h3>9. Changes to This Policy</h3>
-                <p>We may update this privacy policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the "Last Updated" date.</p>
-
-                <h3>10. Contact Us</h3>
-                <p>If you have any questions about this privacy policy, please contact us at: ytsgabcde16@2925.com</p>
+                <h3>4. Limitation of Liability</h3>
+                <p>We are not liable for any damages arising from the use of this service. Interpretations are for reference only.</p>
+                <h3>5. Changes to Terms</h3>
+                <p>We reserve the right to update these Terms of Service at any time. Continued use of the service constitutes acceptance of the new terms.</p>
+            </div>
+        </div>
+    </div>
+    <!-- User Agreement Modal -->
+    <div id="userAgreementModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>User Agreement</h2>
+            <div class="policy-content">
+                <p><strong>Last Updated:</strong> June 1, 2025</p>
+                <h3>1. General</h3>
+                <p>This User Agreement governs your use of the Dream Interpreter service. By accessing or using the service, you agree to comply with this agreement.</p>
+                <h3>2. User Conduct</h3>
+                <ul>
+                    <li>Do not submit unlawful, harmful, or offensive content</li>
+                    <li>Respect the rights and privacy of others</li>
+                </ul>
+                <h3>3. Intellectual Property</h3>
+                <p>All content and technology used in this service are the property of Dream Interpreter or its licensors.</p>
+                <h3>4. Termination</h3>
+                <p>We reserve the right to terminate or restrict your access to the service for violations of this agreement.</p>
+                <h3>5. Contact</h3>
+                <p>If you have any questions about this User Agreement, please contact us at ytsgabcde16@2925.com.</p>
             </div>
         </div>
     </div>
 
     <script src="js/config.js"></script>
-    <script src="js/offline-mode.js"></script>
     <script src="js/script.js"></script>
-    <script>
-        // 页面加载完成后手动添加事件监听
-        document.addEventListener('DOMContentLoaded', function() {
-            // 手动添加登录按钮事件处理程序
-            const loginBtn = document.getElementById('loginButton');
-            if (loginBtn) {
-                console.log('Login button found by inline script');
-                loginBtn.onclick = function(e) {
-                    e.preventDefault();
-                    console.log('Login button clicked! (inline handler)');
-                    
-                    const username = document.getElementById('username').value;
-                    const password = document.getElementById('password').value;
-                    
-                    // 验证输入
-                    if (!username || !password) {
-                        document.getElementById('loginMessage').textContent = 'Username and password are required';
-                        document.getElementById('loginMessage').className = 'message error';
-                        return;
-                    }
-                    
-                    // 显示加载状态
-                    document.getElementById('loginMessage').textContent = 'Logging in...';
-                    document.getElementById('loginMessage').className = 'message';
-                    
-                    // 发送登录请求
-                    fetch('/api/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username, password })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.token) {
-                            // 存储用户信息和令牌
-                            localStorage.setItem('user', JSON.stringify({
-                                userId: data.user_id,
-                                username: data.username,
-                                token: data.token
-                            }));
-                            
-                            // 显示成功消息
-                            document.getElementById('loginMessage').textContent = `Welcome, ${data.username}!`;
-                            document.getElementById('loginMessage').style.color = 'green';
-                            
-                            // 跳转到主页
-                            setTimeout(() => {
-                                document.getElementById('navHome').click();
-                                location.reload(); // 重新加载页面以更新UI
-                            }, 1000);
-                        } else {
-                            document.getElementById('loginMessage').textContent = data.error || 'Login failed';
-                            document.getElementById('loginMessage').className = 'message error';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Login error:', error);
-                        document.getElementById('loginMessage').textContent = 'Login failed: ' + error.message;
-                        document.getElementById('loginMessage').className = 'message error';
-                    });
-                };
-            } else {
-                console.error('Login button not found by inline script!');
-            }
-            
-            // 谷歌登录按钮处理
-            const googleLoginBtn = document.getElementById('googleLoginButton');
-            if (googleLoginBtn) {
-                console.log('Google login button found by inline script');
-                googleLoginBtn.onclick = function(e) {
-                    e.preventDefault();
-                    console.log('Google login button clicked! (inline handler)');
-                    
-                    // 提取域名
-                    let hostname = window.location.hostname;
-                    let mainDomain = 'qhdsalsm.com';
-                    try {
-                        hostname = hostname.replace(/^(https?:\/\/)?(www\.)?/i, '').split('/')[0];
-                        const parts = hostname.split('.');
-                        if (parts.length >= 2) {
-                            mainDomain = parts.slice(-2).join('.');
-                        } else if (hostname) {
-                            mainDomain = hostname;
-                        }
-                    } catch (error) {
-                        console.error('Error extracting domain:', error);
-                    }
-                    
-                    const callback = encodeURIComponent(window.location.href);
-                    console.log('Redirecting to Google login with domain:', mainDomain);
-                    window.location.href = `https://aa.jstang.cn/google_login.php?url=${mainDomain}&redirect_uri=${callback}`;
-                };
-            } else {
-                console.error('Google login button not found by inline script!');
-            }
-        });
-    </script>
 </body>
 </html>

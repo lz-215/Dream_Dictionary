@@ -109,23 +109,31 @@ h3 {
 
 .header-top {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 20px;
+    justify-content: center;
+    align-items: center;
+    background: #e6e6fa;
+    padding: 30px 0 10px 0;
 }
 
 .header-left {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
 }
 
-.header-right {
-    position: relative;
-    min-width: 120px;
+.header-login-area {
     display: flex;
     justify-content: flex-end;
-    align-items: flex-start;
-    padding-top: 10px;
+    align-items: center;
+    min-width: 220px;
+    margin-top: -60px;
+    margin-bottom: 10px;
+    position: relative;
+    top: -80px;
+    left: -15px;
 }
 
 .header-login-btn {
@@ -721,34 +729,27 @@ footer a:hover {
         text-align: center;
         width: 80%;
     }
+
+    .header-login-area {
+        justify-content: center;
+        margin-top: 10px;
+        top: 0;
+        left: 0;
+    }
 }
 
 /* Login Styles */
 .login-container {
     max-width: 400px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 30px;
     background-color: var(--card-bg);
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.login-container input {
-    display: block;
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    background-color: var(--input-bg);
-    color: var(--text-color);
-    font-size: 16px;
-    transition: border-color 0.3s;
-}
-
-.login-container input:focus {
-    border-color: var(--primary-color);
-    outline: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .message {
@@ -957,32 +958,9 @@ footer a:hover {
 
 /* Google Login Styles */
 .social-login {
-    margin-top: 20px;
-}
-
-.or-divider {
-    text-align: center;
-    position: relative;
-    margin: 15px 0;
-    color: var(--secondary-text-color);
-}
-
-.or-divider::before,
-.or-divider::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    width: 40%;
-    height: 1px;
-    background-color: var(--border-color);
-}
-
-.or-divider::before {
-    left: 0;
-}
-
-.or-divider::after {
-    right: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
 }
 
 .google-button {
@@ -990,7 +968,7 @@ footer a:hover {
     align-items: center;
     justify-content: center;
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     background-color: #ffffff;
     color: #757575;
     border: 1px solid #dddddd;
@@ -1031,10 +1009,46 @@ footer a:hover {
     }
 }
 
+/* Google Login Loading */
+.google-button.loading {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
+}
+
+.google-button.loading::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 20px;
+    height: 20px;
+    margin-left: -10px;
+    margin-top: -10px;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
+    border-top-color: #4285F4;
+    animation: google-loading-spin 0.8s linear infinite;
+}
+
+@keyframes google-loading-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .google-button.loading::after {
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-top-color: #4285F4;
+    }
+}
+
 /* User Profile Dropdown Styles */
 .user-profile-dropdown {
     position: relative;
     display: none;
+    z-index: 1100;
 }
 
 .dropdown-profile {
@@ -1048,6 +1062,8 @@ footer a:hover {
     cursor: pointer;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
+    min-width: 140px;
+    position: relative;
 }
 
 .dropdown-profile:hover {
@@ -1060,6 +1076,15 @@ footer a:hover {
     height: 24px;
     border-radius: 50%;
     border: 2px solid rgba(255, 255, 255, 0.7);
+    object-fit: cover;
+}
+
+.dropdown-profile span {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
 }
 
 .dropdown-profile i.fa-chevron-down {
@@ -1085,7 +1110,7 @@ footer a:hover {
     visibility: hidden;
     transform: translateY(-10px);
     transition: all 0.3s ease;
-    z-index: 100;
+    z-index: 1101;
 }
 
 .dropdown-menu.active {
@@ -1103,13 +1128,14 @@ footer a:hover {
     align-items: center;
     gap: 10px;
     padding: 12px 16px;
-    color: #333;
+    color: #333 !important;
     text-decoration: none;
     transition: background-color 0.2s ease;
+    background: none !important;
 }
 
 .dropdown-menu li a:hover {
-    background-color: #f5f5f5;
+    background-color: #f5f5f5 !important;
 }
 
 .dropdown-menu li a i {
@@ -1165,5 +1191,127 @@ footer a:hover {
     }
     to {
         opacity: 0;
+    }
+}
+
+/* Login Prompt Styles */
+.login-prompt {
+    margin: 0 0 20px 0;
+    width: 100%;
+}
+
+.login-prompt-content {
+    background-color: #483d8b0d;
+    border-left: 4px solid var(--primary-color);
+    padding: 15px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.login-prompt-content i.fa-info-circle {
+    color: var(--primary-color);
+    font-size: 20px;
+    margin-right: 15px;
+}
+
+.login-prompt-content p {
+    margin: 0;
+    flex: 1;
+}
+
+.login-prompt-content a {
+    color: var(--primary-color);
+    font-weight: bold;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+
+.login-prompt-content a:hover {
+    color: var(--primary-dark);
+}
+
+.close-prompt {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 5px;
+    margin-left: 10px;
+}
+
+.close-prompt:hover {
+    color: #333;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Debug Info Styles */
+.debug-info {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.debug-info h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.debug-info p {
+    margin: 5px 0;
+}
+
+.debug-info .debug-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.debug-info button {
+    padding: 5px 10px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.debug-info button:hover {
+    background-color: #e0e0e0;
+}
+
+@media (prefers-color-scheme: dark) {
+    .debug-info {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .debug-info h4 {
+        color: #eee;
+    }
+    
+    .debug-info button {
+        background-color: #333;
+        border-color: #444;
+        color: #eee;
+    }
+    
+    .debug-info button:hover {
+        background-color: #444;
     }
 }
