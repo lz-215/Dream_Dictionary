@@ -295,11 +295,10 @@ function updateAuthUI() {
                 dropdown.innerHTML = `
                     <div class="dropdown-profile">
                         <img id="userAvatar" src="${user.picture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.username) + '&background=random'}" alt="User Avatar" class="profile-pic">
-                        <span id="userDropdownName">${user.username}</span>
-                        <i class="fas fa-chevron-down"></i>
+                        <i class="fas fa-envelope"></i>
                     </div>
                     <ul class="dropdown-menu">
-                        <li><a href="#" id="profileLink"><i class="fas fa-user-circle"></i> My Profile</a></li>
+                        <li><a href="#" id="profileLink"><i class="fas fa-envelope"></i> ${user.email}</a></li>
                         <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
                     </ul>
                 `;
