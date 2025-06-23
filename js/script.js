@@ -186,11 +186,9 @@ function handleGoogleLogin() {
 // Add dropdown activation functions
 function initializeUserDropdown() {
     debugLog('Initializing user dropdown');
-    
     // User profile dropdown handling
     const dropdownProfile = document.querySelector('.dropdown-profile');
     const dropdownMenu = document.querySelector('.dropdown-menu');
-    
     if (dropdownProfile && dropdownMenu) {
         // Toggle dropdown when clicking the profile
         dropdownProfile.addEventListener('click', function(e) {
@@ -199,19 +197,33 @@ function initializeUserDropdown() {
             dropdownMenu.classList.toggle('active');
             debugLog('User dropdown toggled');
         });
-        
         // Close dropdown when clicking elsewhere
         document.addEventListener('click', function() {
             dropdownProfile.classList.remove('active');
             dropdownMenu.classList.remove('active');
         });
-        
         // Prevent dropdown from closing when clicking inside it
         dropdownMenu.addEventListener('click', function(e) {
             e.stopPropagation();
         });
-        
         debugLog('Dropdown event listeners added');
+        // 重新绑定 logout 事件，防止失效
+        const logoutLink = document.getElementById('logoutLink');
+        if (logoutLink) {
+            logoutLink.onclick = null;
+            logoutLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                logout();
+                // 切回首页
+                const sections = document.querySelectorAll('.page-section');
+                sections.forEach(s => s.classList.remove('active'));
+                document.getElementById('homeSection').classList.add('active');
+                // 更新导航
+                const navLinks = document.querySelectorAll('nav ul li a');
+                navLinks.forEach(l => l.classList.remove('active'));
+                document.getElementById('navHome').classList.add('active');
+            });
+        }
     } else {
         debugLog('Dropdown elements not found', { 
             dropdownProfile: !!dropdownProfile, 
@@ -237,127 +249,59 @@ function updateAuthUI() {
         } else {
             console.log('[UPDATE UI] navLogin element not found');
         }
-        
-        // Update header - hide login button, show profile dropdown
+        // Hide login button completely (remove from DOM)
         if (headerLoginBtn) {
             headerLoginBtn.style.display = 'none';
-            console.log('[UPDATE UI] Hiding login button');
+            // Remove the button from DOM for clean UI
+            if (headerLoginBtn.parentNode) {
+                headerLoginBtn.parentNode.removeChild(headerLoginBtn);
+            }
+            console.log('[UPDATE UI] Login button removed from DOM');
         } else {
             console.log('[UPDATE UI] headerLoginBtn element not found');
         }
-        
         if (userProfileDropdown) {
-            console.log('[UPDATE UI] userProfileDropdown found, showing it');
             userProfileDropdown.style.display = 'block';
-            
             const userAvatar = document.getElementById('userAvatar');
-            const userDropdownName = document.getElementById('userDropdownName');
-            
-            // Set user avatar and name
             if (userAvatar) {
-            if (user.picture) {
-                userAvatar.src = user.picture;
-                    console.log('[UPDATE UI] Setting user avatar from picture:', user.picture);
-            } else {
-                // Default avatar if no picture is available
-                userAvatar.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.username) + '&background=random';
-                    console.log('[UPDATE UI] Setting default user avatar');
+                if (user.picture) {
+                    userAvatar.src = user.picture;
+                } else {
+                    userAvatar.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.username) + '&background=random';
                 }
-            } else {
-                console.log('[UPDATE UI] userAvatar element not found');
             }
-            
-            if (userDropdownName) {
-            userDropdownName.textContent = user.username;
-                console.log('[UPDATE UI] Setting username in dropdown:', user.username);
-            } else {
-                console.log('[UPDATE UI] userDropdownName element not found');
+            // 填充邮箱
+            const userEmail = document.getElementById('userEmail');
+            if (userEmail && user.email) {
+                userEmail.textContent = user.email;
             }
-            
-            // Initialize the dropdown functionality
             initializeUserDropdown();
-        } else {
-            console.log('[UPDATE UI] userProfileDropdown element not found');
-            
-            // 如果找不到元素，尝试创建
-            console.log('[UPDATE UI] Attempting to create dropdown elements');
-            
-            // 检查header-right是否存在
-            const headerRight = document.querySelector('.header-right');
-            if (headerRight && headerLoginBtn) {
-                console.log('[UPDATE UI] headerRight found, creating dropdown');
-                
-                // 创建用户资料下拉菜单
-                const dropdown = document.createElement('div');
-                dropdown.id = 'userProfileDropdown';
-                dropdown.className = 'user-profile-dropdown';
-                dropdown.style.display = 'block';
-                dropdown.innerHTML = `
-                    <div class="dropdown-profile">
-                        <img id="userAvatar" src="${user.picture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.username) + '&background=random'}" alt="User Avatar" class="profile-pic">
-                        <i class="fas fa-envelope"></i>
-                    </div>
-                    <ul class="dropdown-menu">
-                        <li><a href="#" id="profileLink"><i class="fas fa-envelope"></i> ${user.email}</a></li>
-                        <li><a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-                    </ul>
-                `;
-                
-                // 隐藏登录按钮
-                headerLoginBtn.style.display = 'none';
-                
-                // 添加下拉菜单到header-right
-                headerRight.appendChild(dropdown);
-                
-                // 添加事件监听器
-                const profileLink = document.getElementById('profileLink');
-                if (profileLink) {
-                    profileLink.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        alert('Profile functionality coming soon!');
-                    });
-                }
-                
-                const logoutLink = document.getElementById('logoutLink');
-                if (logoutLink) {
-                    logoutLink.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        logout();
-                        
-                        // Show home section after logout
-                        const sections = document.querySelectorAll('.page-section');
-                        sections.forEach(s => s.classList.remove('active'));
-                        document.getElementById('homeSection').classList.add('active');
-                        
-                        // Update nav links
-                        const navLinks = document.querySelectorAll('nav ul li a');
-                        navLinks.forEach(l => l.classList.remove('active'));
-                        document.getElementById('navHome').classList.add('active');
-                    });
-                }
-                
-                // 初始化下拉菜单功能
-                initializeUserDropdown();
-            } else {
-                console.log('[UPDATE UI] headerRight or headerLoginBtn not found, cannot create dropdown');
-            }
         }
     } else {
-        // Update navigation menu login button
         if (navLogin) {
             navLogin.textContent = 'Login';
-            console.log('[UPDATE UI] Updated navLogin to Login');
         }
-        
-        // Update header - show login button, hide profile dropdown
-        if (headerLoginBtn) {
-            headerLoginBtn.style.display = 'block';
-            console.log('[UPDATE UI] Showing login button');
+        // 未登录时，确保按钮存在且可见
+        let btn = document.getElementById('headerLoginBtn');
+        if (!btn) {
+            // 重新插入按钮到 .header-login-area
+            const loginArea = document.querySelector('.header-login-area');
+            if (loginArea) {
+                btn = document.createElement('button');
+                btn.id = 'headerLoginBtn';
+                btn.className = 'header-login-btn';
+                btn.innerHTML = '<i class="fas fa-user"></i> Login';
+                loginArea.insertBefore(btn, loginArea.firstChild);
+                btn.addEventListener('click', handleGoogleLogin);
+            }
+        } else {
+            btn.style.display = 'block';
+            // 防止重复绑定，先移除再绑定
+            btn.onclick = null;
+            btn.addEventListener('click', handleGoogleLogin);
         }
-        
         if (userProfileDropdown) {
             userProfileDropdown.style.display = 'none';
-            console.log('[UPDATE UI] Hiding user profile dropdown');
         }
     }
 }
@@ -504,7 +448,8 @@ function processGoogleLoginData() {
                             username: data.username || name || email || 'User',
                         token: data.token,
                         googleId: googleId,
-                        picture: picture
+                        picture: picture,
+                        email: email || '' // 确保包含 email 字段
                         };
                         
                         login(userData);
@@ -1123,42 +1068,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Add header login button handler
-    const headerLoginBtn = document.getElementById('headerLoginBtn');
-    if (headerLoginBtn) {
-        headerLoginBtn.addEventListener('click', function() {
-            handleGoogleLogin();
-        });
-    }
-    
-    // Profile link handler
-    const profileLink = document.getElementById('profileLink');
-    if (profileLink) {
-        profileLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('Profile functionality coming soon!');
-        });
-    }
-    
-    // Logout link handler
-    const logoutLink = document.getElementById('logoutLink');
-    if (logoutLink) {
-        logoutLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            logout();
-            
-            // Show home section after logout
-            const sections = document.querySelectorAll('.page-section');
-            sections.forEach(s => s.classList.remove('active'));
-            document.getElementById('homeSection').classList.add('active');
-            
-            // Update nav links
-            const navLinks = document.querySelectorAll('nav ul li a');
-            navLinks.forEach(l => l.classList.remove('active'));
-            document.getElementById('navHome').classList.add('active');
-        });
-    }
-    
     // Load dream history when history tab is clicked
     document.getElementById('navHistory').addEventListener('click', async function(e) {
         // Check if user is logged in before showing history
@@ -1231,7 +1140,8 @@ function mockGoogleLogin(googleId, name, email, picture) {
             username: name || email || 'Local User',
             token: 'mock-token-' + Math.random().toString(36).substring(2),
             googleId: googleId,
-            picture: picture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name || 'User') + '&background=random'
+            picture: picture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name || 'User') + '&background=random',
+            email: email || '' // 确保包含 email 字段
         };
         
         console.log('[MOCK LOGIN] Generated user data:', userData);
